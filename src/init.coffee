@@ -1,5 +1,5 @@
 pupOnline = ->
-	API.sendChat "Bot Online!"
+	API.sendChat "/em is online"
 
 populateUserData = ->
 	users = API.getUsers()

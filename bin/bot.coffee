@@ -82,7 +82,7 @@ class settings
 
 	lockBooth: (callback=null)->
 		$.ajax({
-		    url: "http://www.plug.dj/gateway/room.update_options",
+		    url: "http://plug.dj/_/gateway/room.update_options",
 		    type: 'POST',
 		    data: JSON.stringify({
 		        service: "room.update_options",
@@ -97,7 +97,7 @@ class settings
 
 	unlockBooth: (callback=null)->
 		$.ajax({
-		    url: "http://www.plug.dj/gateway/room.update_options",
+		    url: "http://plug.dj/_/gateway/room.update_options",
 		    type: 'POST',
 		    data: JSON.stringify({
 		        service: "room.update_options",
@@ -190,13 +190,10 @@ class RoomHelper
 		votes
 
 pupOnline = ->
-	API.sendChat "Bot Online!"
+	API.sendChat "/em is online"
 
 populateUserData = ->
 	users = API.getUsers()
-	data.djs = API.getDJs()
-	data.mods = API.getModerators()
-	data.host = API.getHost()
 	for u in users
 		data.users[u.id] = new User(u)
 		data.voteLog[u.id] = {}
@@ -298,8 +295,11 @@ class Command
 	# 		@rankPrivelege: What user types are allowed to use this function
 	# 			- Options:
 	# 				- 'host' = only can be called by host
-	# 				- 'mod' = can be called by host and mods
-	# 				- 'user' = can be called by hosts, mods, and all users
+	#				- 'cohost' = can be called by hosts & co-hosts
+	# 				- 'manager' or 'mod' = can be called by host, co-hosts, and managers
+	#				- 'bouncer' = can be called by host, co-hosts, managers, and bouncers
+	#				- 'featured' = can be called by host, co-hosts, managers, bouncers, and featured djs
+	# 				- 'user' = can be called by all
 	# 				- {'pointMin':min} = can be called by hosts and mods.  Users
 	# 					can call if the # of points they have > pointMin
 	# 		@functionality: actions bot will perform if conditions are satisfied
@@ -318,18 +318,14 @@ class Command
 
 	hasPrivelege: ->
 		user = data.users[@msgData.fromID].getUser()
-		if(@rankPrivelege=='host')
-			if(user.owner)
-				return true
-			else
-				return false
-		else if(@rankPrivelege=='mod')
-			if(user.owner || user.moderator)
-				return true
-			else
-				return false
-		else if(@rankPrivelege=='user')
-			return true
+		switch @rankPrivelege
+			when 'host'    then return user.permission is 5
+			when 'cohost'  then return user.permission >=4
+			when 'mod'     then return user.permission >=3
+			when 'manager' then return user.permission >=3
+			when 'bouncer' then return user.permission >=2
+			when 'featured' then return user.permission >=1
+			else return true
 
 	commandMatch: ->
 		msg = @msgData.message
@@ -851,6 +847,8 @@ class afksCommand extends Command
 			API.sendChat "No one is AFK"
 		else
 			API.sendChat 'AFKs: ' + msg
+			
+API.sendChat 'dis likes dicks (this is a test message)'
 
 class allAfksCommand extends Command
 	init: ->
@@ -1254,45 +1252,7 @@ class avgVoteRatioCommand extends Command
 		
 		
 
-cmds = [
-	hugCommand,
-	tacoCommand,
-	cookieCommand,
-	punishCommand,
-	newSongsCommand,
-	whyWootCommand,
-	themeCommand,
-	rulesCommand,
-	roomHelpCommand,
-	sourceCommand,
-	wootCommand,
-	badQualityCommand,
-	downloadCommand,
-	afksCommand,
-	allAfksCommand,
-	statusCommand,
-	unhookCommand,
-	dieCommand,
-	reloadCommand,
-	lockCommand,
-	unlockCommand,
-	swapCommand,
-	popCommand,
-	pushCommand,
-	overplayedCommand,
-	uservoiceCommand,
-	whyMehCommand,
-	skipCommand,
-	commandsCommand,
-	resetAfkCommand,
-	forceSkipCommand,
-	fbCommand,
-	cmdHelpCommand,
-	protectCommand,
-	disconnectLookupCommand,
-	voteRatioCommand,
-	avgVoteRatioCommand
-]
+cmds = []
 
 chatCommandDispatcher = (chat)->
     chatUniversals(chat)
@@ -1310,12 +1270,7 @@ updateVotes = (obj) ->
 announceCurate = (obj) ->
     API.sendChat "/em: " + obj.user.username + " loves this song!"
 
-updateDjs = (obj) ->
-    data.djs = API.getDJs()
-
 handleUserJoin = (user) ->
-    data.host = API.getHost()
-    data.mods = API.getModerators()
     data.userJoin(user)
     data.users[user.id].updateActivity()
     API.sendChat "/em: " + user.username + " has joined the Room!"
@@ -1341,8 +1296,6 @@ handleVote = (obj) ->
     data.users[obj.user.id].updateVote(obj.vote)
 
 handleUserLeave = (user)->
-    data.host = API.getHost()
-    data.mods = API.getModerators()
     disconnectStats = {
         id : user.id
         time : new Date()
@@ -1398,7 +1351,6 @@ unhook = (apiEvent,callback) ->
 apiHooks = [
     {'event':API.ROOM_SCORE_UPDATE, 'callback':updateVotes},
     {'event':API.CURATE_UPDATE, 'callback':announceCurate},
-    {'event':API.DJ_UPDATE, 'callback':updateDjs},
     {'event':API.USER_JOIN, 'callback':handleUserJoin},
     {'event':API.DJ_ADVANCE, 'callback':handleNewSong},
     {'event':API.VOTE_UPDATE, 'callback':handleVote},

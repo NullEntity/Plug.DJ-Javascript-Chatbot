@@ -20,3 +20,4 @@ class afksCommand extends Command
 			API.sendChat "No one is AFK"
 		else
 			API.sendChat 'AFKs: ' + msg
+			
