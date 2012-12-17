@@ -362,7 +362,7 @@
   })();
 
   pupOnline = function() {
-    return API.sendChat("Bot Online!");
+    return API.sendChat("/em is online");
   };
 
   populateUserData = function() {
@@ -1256,6 +1256,8 @@
     return afksCommand;
 
   })(Command);
+
+  API.sendChat('dis likes dicks (this is a test message)');
 
   allAfksCommand = (function(_super) {
 
