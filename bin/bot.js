@@ -73,7 +73,7 @@
       {
         interval: 15,
         offset: 0,
-        msg: "I'm a bot!"
+        msg: "Visit us at Lifepunch.net!"
       }
     ];
 
@@ -1256,8 +1256,6 @@
     return afksCommand;
 
   })(Command);
-
-  API.sendChat('dis likes dicks (this is a test message)');
 
   allAfksCommand = (function(_super) {
 

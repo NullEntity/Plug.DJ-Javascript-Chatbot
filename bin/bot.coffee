@@ -23,7 +23,7 @@ class settings
 	pupScriptUrl: ''
 	afkTime: 12*60*1000#Time without activity to be considered afk. 12 minutes in milliseconds
 	songIntervalMessages: [
-		{interval:15,offset:0,msg:"I'm a bot!"}
+		{interval:15,offset:0,msg:"Visit us at Lifepunch.net!"}
 	]
 	songCount: 0
 
@@ -848,7 +848,6 @@ class afksCommand extends Command
 		else
 			API.sendChat 'AFKs: ' + msg
 			
-API.sendChat 'dis likes dicks (this is a test message)'
 
 class allAfksCommand extends Command
 	init: ->
